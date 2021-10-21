@@ -2,28 +2,38 @@
 
 ## Basic functionality
 
-- always authenticated (user or app context)
 - provides list of uri with version and expire time (in seconds) for caching
-- getAuthToken callback to solve auth Token string from Request
 - userDiscovery callback when request as user context ("type": "urn:seeds:params:request-type:user")
 - appDiscovery callback when request as application context ("type": "urn:seeds:params:request-type:application")
 - discovery callback should return [Promise&lt;Service&gt;](./src/types.ts#L10) or throw Error
+- HttpListener as example to utilize something like ExpressJS and auth tokens
 
 ## example discovery setup
 
 ```typescript
 import {Request} from 'express';
 
-const discovery = new Discovery<Request>({
-	getAuthToken: (req, type) => {
-		const auth = req.headers.authorization;
+// build http listener (Express) and auth callback
+export const httpListener = new HttpListener<Request>({
+	authCallback: async (srvReq, headers) => {
+		const auth = headers.authorization;
 		if (!auth || !auth.startsWith('Bearer ')) {
-			throw new HttpError(401, 'auth error');
+			throw new Error('auth error');
 		}
-		return auth.replace(/^Bearer /, '');
+		auth.replace(/^Bearer /, '');
+		if (srvReq.type === 'urn:seeds:params:request-type:application') {
+			// verify application token
+		}
+		if (srvReq.type === 'urn:seeds:params:request-type:user') {
+			// verify user token
+		}
+		throw new Error('auth error');
 	},
-	userDiscovery: async ({userToken, service, requestVersions}) => {
-		// verify userToken
+});
+
+// discovery service and version router
+const discovery = new Discovery({
+	userDiscovery: async ({service, requestVersions}) => {
 		switch (service) {
 			case 'roles': {
 				if (requestVersions.indexOf(1) !== -1) {
@@ -44,6 +54,10 @@ const discovery = new Discovery<Request>({
 		throw new HttpError(404, `service not found`);
 	},
 });
+
+// attach http listener to discovery
+discovery.addListener(httpListener);
+
 ```
 
 ## Express Middleware hookup
@@ -51,7 +65,7 @@ const discovery = new Discovery<Request>({
 ```typescript
 app.post('/.discovery', async (req, res, next) => {
 	try {
-		res.json(await discovery.handleDiscovery(req.body, req));
+		res.json(await httpListener.handleDiscovery(req));
 	} catch (err) {
 		next(err);
 	}
@@ -93,7 +107,8 @@ app.post('/.discovery', async (req, res, next) => {
 }
 ```
 
-###  fetch API "user" call example
+### fetch API "user" call example
+
 ```typescript
 export async function getRoleApiUri() {
 	const version = 1;

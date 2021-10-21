@@ -1,26 +1,36 @@
-import {ApplicationCallbackParams, DiscoveryType, Service, UserCallbackParams} from './types';
+import {DiscoveryRequest, Listener} from './Listener';
+import {BaseCallbackParams, Service} from './types';
 import {isString, isArray, isNumber} from './validate';
 
-interface IProps<HttpRequest = unknown> {
-	appDiscovery?: (params: ApplicationCallbackParams) => Promise<Service>;
-	userDiscovery?: (params: UserCallbackParams) => Promise<Service>;
-	getAuthToken: (req: HttpRequest, type: DiscoveryType) => string;
+interface IProps {
+	appDiscovery?: (params: BaseCallbackParams) => Promise<Service>;
+	userDiscovery?: (params: BaseCallbackParams) => Promise<Service>;
 }
 
-export class Discovery<HttpRequest = unknown> {
-	private appDiscovery: IProps<HttpRequest>['appDiscovery'];
-	private userDiscovery: IProps<HttpRequest>['userDiscovery'];
-	private getAuthToken: IProps<HttpRequest>['getAuthToken'];
-	constructor(props: IProps<HttpRequest>) {
+export class Discovery {
+	private listeners: Listener[] = [];
+	private appDiscovery: IProps['appDiscovery'];
+	private userDiscovery: IProps['userDiscovery'];
+
+	constructor(props: IProps) {
 		this.appDiscovery = props?.appDiscovery;
 		this.userDiscovery = props?.userDiscovery;
-		this.getAuthToken = props?.getAuthToken;
-		if (!this.getAuthToken) {
-			throw new Error('missing getAuthHeader callback');
+		this.handleListenerDiscovery = this.handleListenerDiscovery.bind(this);
+	}
+
+	public addListener(listener: Listener): void {
+		listener.handleResponse(this.handleListenerDiscovery);
+		this.listeners.push(listener);
+	}
+
+	public deleteListener(listener: Listener): void {
+		const idx = this.listeners.findIndex((l) => l === listener);
+		if (idx !== -1) {
+			this.listeners.splice(idx, 1);
 		}
 	}
 
-	public handleDiscovery({type, service, requestVersions}: {type: string; service: string; requestVersions: number[]}, req: HttpRequest): Promise<Service> {
+	public handleListenerDiscovery({type, service, requestVersions}: DiscoveryRequest): Promise<Service> {
 		if (!isString(type)) {
 			throw new TypeError('type is not a string');
 		}
@@ -35,12 +45,12 @@ export class Discovery<HttpRequest = unknown> {
 				if (!this.appDiscovery) {
 					throw new Error('no appDiscovery defined');
 				}
-				return this.appDiscovery({applicationToken: this.getAuthToken(req, type), service, requestVersions});
+				return this.appDiscovery({service, requestVersions});
 			case 'urn:seeds:params:request-type:user':
 				if (!this.userDiscovery) {
 					throw new Error('no userDiscovery defined');
 				}
-				return this.userDiscovery({userToken: this.getAuthToken(req, type), service, requestVersions});
+				return this.userDiscovery({service, requestVersions});
 			default:
 				throw new Error('not valid request type');
 		}

@@ -1,6 +1,12 @@
+import {isString} from './validate';
+
 /* eslint-disable camelcase */
 const discoveryTypes = ['urn:seeds:params:request-type:application', 'urn:seeds:params:request-type:user'] as const;
 export type DiscoveryType = typeof discoveryTypes[number];
+
+export function isDiscoveryType(type: unknown): type is DiscoveryType {
+	return isString(type) && discoveryTypes.findIndex((c) => c === type) !== -1;
+}
 
 interface Endpoint {
 	uri: string;
@@ -16,7 +22,7 @@ export interface Service {
 	endpoints: Endpoint[];
 }
 
-interface BaseCallbackParams {
+export interface BaseCallbackParams {
 	service: string;
 	requestVersions: number[];
 }
