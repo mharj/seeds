@@ -1,4 +1,5 @@
 import {ApplicationCallbackParams, DiscoveryType, Service, UserCallbackParams} from './types';
+import {isString, isArray, isNumber} from './validate';
 
 interface IProps<HttpRequest = unknown> {
 	appDiscovery?: (params: ApplicationCallbackParams) => Promise<Service>;
@@ -20,6 +21,15 @@ export class Discovery<HttpRequest = unknown> {
 	}
 
 	public handleDiscovery({type, service, requestVersions}: {type: string; service: string; requestVersions: number[]}, req: HttpRequest): Promise<Service> {
+		if (!isString(type)) {
+			throw new TypeError('type is not a string');
+		}
+		if (!isString(service)) {
+			throw new TypeError('service is not a string');
+		}
+		if (!isArray(requestVersions, isNumber)) {
+			throw new TypeError('requestVersions is not array of numbers');
+		}
 		switch (type) {
 			case 'urn:seeds:params:request-type:application':
 				if (!this.appDiscovery) {

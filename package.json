@@ -1,5 +1,5 @@
 {
-    "name": "seeds",
+    "name": "mharj-seeds",
     "version": "0.0.1",
     "description": "Service Discovery System",
     "main": "./dist/index.js",
@@ -29,6 +29,8 @@
         "typescript": "^4.3.5"
     },
     "scripts": {
+        "build": "tsc",
+        "watch": "tsc -w",
         "test": "mocha",
         "lint": "eslint src/**.ts"
     },
@@ -60,5 +62,8 @@
     "bugs": {
         "url": "https://github.com/mharj/seeds/issues"
     },
+    "files": [
+        "dist"
+    ],
     "homepage": "https://github.com/mharj/seeds#readme"
 }

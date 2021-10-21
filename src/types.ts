@@ -8,8 +8,11 @@ interface Endpoint {
 }
 
 export interface Service {
+	/** service name */
 	service: string;
+	/** URI expiration in seconds */
 	expires_in: number;
+	/** URI endpoint list and versions */
 	endpoints: Endpoint[];
 }
 
