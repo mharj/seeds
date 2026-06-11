@@ -1,5 +1,5 @@
-import {DiscoveryRequest, Listener} from './Listener';
-import {Service} from './types';
+import {type DiscoveryRequest, Listener} from './Listener';
+import type {Service} from './types';
 
 interface HttpRequestLike {
 	headers: unknown;
@@ -11,7 +11,7 @@ type AuthCallback<HttpRequest extends HttpRequestLike> = (type: DiscoveryRequest
 export class HttpListener<HttpRequest extends HttpRequestLike> extends Listener {
 	private authCallback: AuthCallback<HttpRequest>;
 
-	constructor({authCallback}: {authCallback: AuthCallback<HttpRequest>}) {
+	public constructor({authCallback}: {authCallback: AuthCallback<HttpRequest>}) {
 		super();
 		this.authCallback = authCallback;
 	}

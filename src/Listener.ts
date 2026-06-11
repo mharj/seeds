@@ -1,4 +1,4 @@
-import {DiscoveryType, isDiscoveryType, Service} from './types';
+import {type DiscoveryType, isDiscoveryType, type Service} from './types';
 import {isArray, isNumber, isRecord, isString} from './validate';
 
 export interface DiscoveryRequest {
@@ -8,7 +8,7 @@ export interface DiscoveryRequest {
 }
 
 export abstract class Listener {
-	protected callback: (request: DiscoveryRequest) => Promise<Service>;
+	protected callback: ((request: DiscoveryRequest) => Promise<Service>) | undefined;
 	public handleResponse(callback: (request: DiscoveryRequest) => Promise<Service>): void {
 		this.callback = callback;
 	}

@@ -2,10 +2,10 @@ import {isString} from './validate';
 
 /* eslint-disable camelcase */
 const discoveryTypes = ['urn:seeds:params:request-type:application', 'urn:seeds:params:request-type:user'] as const;
-export type DiscoveryType = typeof discoveryTypes[number];
+export type DiscoveryType = (typeof discoveryTypes)[number];
 
 export function isDiscoveryType(type: unknown): type is DiscoveryType {
-	return isString(type) && discoveryTypes.findIndex((c) => c === type) !== -1;
+	return isString(type) && discoveryTypes.indexOf(type as DiscoveryType) !== -1;
 }
 
 interface Endpoint {

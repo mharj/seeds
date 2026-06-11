@@ -1,6 +1,6 @@
-import {DiscoveryRequest, Listener} from './Listener';
-import {BaseCallbackParams, Service} from './types';
-import {isString, isArray, isNumber} from './validate';
+import type {DiscoveryRequest, Listener} from './Listener';
+import type {BaseCallbackParams, Service} from './types';
+import {isArray, isNumber, isString} from './validate';
 
 interface IProps {
 	appDiscovery?: (params: BaseCallbackParams) => Promise<Service>;
@@ -12,7 +12,7 @@ export class Discovery {
 	private appDiscovery: IProps['appDiscovery'];
 	private userDiscovery: IProps['userDiscovery'];
 
-	constructor(props: IProps) {
+	public constructor(props: IProps) {
 		this.appDiscovery = props?.appDiscovery;
 		this.userDiscovery = props?.userDiscovery;
 		this.handleListenerDiscovery = this.handleListenerDiscovery.bind(this);
@@ -24,7 +24,7 @@ export class Discovery {
 	}
 
 	public deleteListener(listener: Listener): void {
-		const idx = this.listeners.findIndex((l) => l === listener);
+		const idx = this.listeners.indexOf(listener);
 		if (idx !== -1) {
 			this.listeners.splice(idx, 1);
 		}
